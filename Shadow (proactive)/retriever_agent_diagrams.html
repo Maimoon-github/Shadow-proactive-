@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Retriever Agent · Diagram Suite</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.6.1/mermaid.min.js"></script>
+
+<style>
+  :root {
+    --bg: #07080d;
+    --surface: #0d0f17;
+    --panel: #11141f;
+    --border: #1e2236;
+    --accent: #00f5c4;
+    --accent2: #7b61ff;
+    --accent3: #ff6b6b;
+    --accent4: #ffd166;
+    --text: #d4ddf7;
+    --muted: #5a6585;
+    --glow: 0 0 24px rgba(0,245,196,0.18);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── noise overlay ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+  }
+
+  /* ── grid lines ── */
+  body::after {
+    content: '';
+    position: fixed; inset: 0; z-index: 0;
+    background-image:
+      linear-gradient(rgba(30,34,54,0.4) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(30,34,54,0.4) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+  }
+
+  .wrapper {
+    position: relative; z-index: 1;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 2rem 6rem;
+  }
+
+  /* ── header ── */
+  header {
+    padding: 4rem 0 2rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 3rem;
+    position: relative;
+  }
+
+  .tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    margin-bottom: 1rem;
+    opacity: 0.9;
+  }
+
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: clamp(2.2rem, 5vw, 4rem);
+    line-height: 1;
+    letter-spacing: -0.03em;
+    color: #fff;
+    margin-bottom: 1rem;
+  }
+
+  h1 span { color: var(--accent); }
+
+  .subtitle {
+    color: var(--muted);
+    font-size: 0.8rem;
+    max-width: 680px;
+    line-height: 1.7;
+  }
+
+  /* ── meta card ── */
+  .meta-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    margin-bottom: 3.5rem;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .meta-cell {
+    background: var(--panel);
+    padding: 1.2rem 1.5rem;
+  }
+
+  .meta-cell .label {
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.5rem;
+  }
+
+  .meta-cell .value {
+    font-size: 0.75rem;
+    color: var(--text);
+    line-height: 1.6;
+  }
+
+  .dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+  .dot-green { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+  .dot-purple { background: var(--accent2); box-shadow: 0 0 6px var(--accent2); }
+  .dot-red { background: var(--accent3); box-shadow: 0 0 6px var(--accent3); }
+  .dot-yellow { background: var(--accent4); box-shadow: 0 0 6px var(--accent4); }
+
+  /* ── diagram section ── */
+  .diagram-section {
+    margin-bottom: 4rem;
+    animation: fadeUp 0.7s ease both;
+  }
+
+  .diagram-section:nth-child(2) { animation-delay: 0.1s; }
+  .diagram-section:nth-child(3) { animation-delay: 0.2s; }
+  .diagram-section:nth-child(4) { animation-delay: 0.3s; }
+  .diagram-section:nth-child(5) { animation-delay: 0.4s; }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 3rem;
+    font-weight: 800;
+    color: var(--border);
+    line-height: 1;
+    user-select: none;
+  }
+
+  .section-info h2 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1.3rem;
+    color: #fff;
+    margin-bottom: 0.2rem;
+  }
+
+  .section-info p {
+    font-size: 0.7rem;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+  }
+
+  .badge {
+    margin-left: auto;
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.6rem;
+    border: 1px solid;
+    white-space: nowrap;
+  }
+
+  .badge-1 { color: var(--accent);  border-color: var(--accent); }
+  .badge-2 { color: var(--accent2); border-color: var(--accent2); }
+  .badge-3 { color: var(--accent4); border-color: var(--accent4); }
+  .badge-4 { color: var(--accent3); border-color: var(--accent3); }
+
+  /* ── diagram box ── */
+  .diagram-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 2.5rem 2rem;
+    overflow-x: auto;
+    position: relative;
+  }
+
+  .diagram-box::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    opacity: 0.4;
+  }
+
+  .diagram-section:nth-child(3) .diagram-box::before { background: linear-gradient(90deg, transparent, var(--accent2), transparent); }
+  .diagram-section:nth-child(4) .diagram-box::before { background: linear-gradient(90deg, transparent, var(--accent4), transparent); }
+  .diagram-section:nth-child(5) .diagram-box::before { background: linear-gradient(90deg, transparent, var(--accent3), transparent); }
+
+  .mermaid {
+    display: flex;
+    justify-content: center;
+  }
+
+  /* ── mermaid theme overrides ── */
+  .mermaid svg {
+    font-family: 'Space Mono', monospace !important;
+    max-width: 100%;
+  }
+
+  /* ── footer ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 2rem 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.65rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── scrollbar ── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); }
+</style>
+</head>
+<body>
+
+<div class="wrapper">
+
+  <!-- ════ HEADER ════ -->
+  <header>
+    <div class="tag">Shadow · Agentic Workflow Architecture</div>
+    <h1>Retriever <span>Agent</span><br>Diagram Suite</h1>
+    <p class="subtitle">Four formal diagram types — Flowchart, Sequence, Class, and State — representing the identical workflow logic of the RAG-powered Retriever Agent node within the Shadow multi-agent pipeline.</p>
+  </header>
+
+  <!-- ════ META CARD ════ -->
+  <div class="meta-grid">
+    <div class="meta-cell">
+      <div class="label">Agent Name</div>
+      <div class="value"><span class="dot dot-green"></span>Retriever Agent</div>
+    </div>
+    <div class="meta-cell">
+      <div class="label">Primary Purpose</div>
+      <div class="value">Embed user queries, retrieve ranked context chunks from vector DB via RAG, and return citations to the Planner Agent</div>
+    </div>
+    <div class="meta-cell">
+      <div class="label">Inputs</div>
+      <div class="value">TaskRequest from Planner · user_goal (str) · sub_task_id (uuid) · top_k (int)</div>
+    </div>
+    <div class="meta-cell">
+      <div class="label">Outputs</div>
+      <div class="value">RetrievalResult: top-k context chunks · similarity scores · provenance citations</div>
+    </div>
+    <div class="meta-cell">
+      <div class="label">External Dependencies</div>
+      <div class="value">Embedding Model API · Vector DB (Milvus/Weaviate) · Postgres (metadata) · Event Bus (Redis)</div>
+    </div>
+    <div class="meta-cell">
+      <div class="label">Failure Conditions</div>
+      <div class="value"><span class="dot dot-red"></span>Embedding timeout · DB unavailable · Empty result set · Similarity below threshold · Max retries exceeded</div>
+    </div>
+    <div class="meta-cell">
+      <div class="label">Success Criteria</div>
+      <div class="value"><span class="dot dot-green"></span>≥1 chunk returned · similarity ≥ 0.72 · latency ≤ 3 s · provenance logged to Postgres</div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════
+       DIAGRAM 1 — FLOWCHART
+  ════════════════════════════════════ -->
+  <div class="diagram-section">
+    <div class="section-header">
+      <div class="section-num">01</div>
+      <div class="section-info">
+        <h2>Flowchart</h2>
+        <p>Decision tree · error paths · start / end boundaries</p>
+      </div>
+      <div class="badge badge-1">Control Flow</div>
+    </div>
+    <div class="diagram-box">
+      <div class="mermaid">
+flowchart TD
+    START([▶ START: Task Received\nfrom Planner Agent]):::startEnd
+
+    VALIDATE{Validate\nTaskRequest}:::decision
+    VALID_ERR[Emit ValidationError\nEvent to EventBus]:::error
+
+    EMBED[Call Embedding Model API\nwith user_goal string]:::process
+    EMBED_ERR{Embedding\nTimeout / Error?}:::decision
+
+    RETRY{Retry Attempt\n≤ 3?}:::decision
+    DEAD[Publish to\nDead Letter Queue\nNotify Planner: FAILED]:::error
+
+    QUERY[Query Vector DB\nwith embedding vector\ntop_k chunks requested]:::process
+    DB_ERR{VectorDB\nUnavailable?}:::decision
+
+    EMPTY{Result Set\nEmpty?}:::decision
+    LOW_SIM{Max Similarity\n≥ 0.72?}:::decision
+
+    LOW_WARN[Attach LowConfidence\nWarning Flag]:::warning
+
+    BUILD[Build RetrievalResult\nchunks · scores · citations]:::process
+    META[Log Provenance\nto Postgres Metadata Store]:::process
+    EMIT[Emit retrieval_complete\nEvent to EventBus]:::process
+
+    PLANNER([◀ END: Return Result\nto Planner Agent]):::startEnd
+
+    START --> VALIDATE
+    VALIDATE -->|Invalid| VALID_ERR
+    VALIDATE -->|Valid| EMBED
+    VALID_ERR --> PLANNER
+
+    EMBED --> EMBED_ERR
+    EMBED_ERR -->|Yes| RETRY
+    EMBED_ERR -->|No| QUERY
+    RETRY -->|Yes — wait + retry| EMBED
+    RETRY -->|No| DEAD
+    DEAD --> PLANNER
+
+    QUERY --> DB_ERR
+    DB_ERR -->|Yes| RETRY
+    DB_ERR -->|No| EMPTY
+
+    EMPTY -->|Yes| DEAD
+    EMPTY -->|No| LOW_SIM
+
+    LOW_SIM -->|Below 0.72| LOW_WARN
+    LOW_SIM -->|Above 0.72| BUILD
+    LOW_WARN --> BUILD
+
+    BUILD --> META
+    META --> EMIT
+    EMIT --> PLANNER
+
+    classDef startEnd fill:#0d1a14,stroke:#00f5c4,color:#00f5c4,stroke-width:2px
+    classDef decision fill:#0e0e1f,stroke:#7b61ff,color:#b8b0ff,stroke-width:1.5px
+    classDef process  fill:#0a0f1a,stroke:#1e2236,color:#d4ddf7,stroke-width:1px
+    classDef error    fill:#1a0d0d,stroke:#ff6b6b,color:#ff6b6b,stroke-width:1.5px
+    classDef warning  fill:#1a1300,stroke:#ffd166,color:#ffd166,stroke-width:1px
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════
+       DIAGRAM 2 — SEQUENCE
+  ════════════════════════════════════ -->
+  <div class="diagram-section">
+    <div class="section-header">
+      <div class="section-num">02</div>
+      <div class="section-info">
+        <h2>Sequence Diagram</h2>
+        <p>Actor message flow · alternate failure paths</p>
+      </div>
+      <div class="badge badge-2">Interaction</div>
+    </div>
+    <div class="diagram-box">
+      <div class="mermaid">
+sequenceDiagram
+    autonumber
+    actor Planner as 🧠 Planner Agent
+    participant RA as 🔍 Retriever Agent
+    participant EM as ⚡ Embedding Model
+    participant VDB as 🗄️ Vector DB
+    participant PG as 📋 Postgres
+    participant EB as 📡 EventBus
+
+    Planner ->>+ RA: TaskRequest { user_goal, sub_task_id, top_k }
+
+    Note over RA: Validate TaskRequest schema
+    alt Invalid Request
+        RA -->> Planner: ValidationError { sub_task_id, reason }
+        RA ->> EB: Publish retrieval_failed event
+    end
+
+    RA ->>+ EM: embed(user_goal)
+
+    alt Embedding Timeout / Error
+        EM -->> RA: Error / Timeout
+        loop Retry ≤ 3 times
+            RA ->> EM: embed(user_goal) [retry]
+            EM -->> RA: Response or Error
+        end
+        alt Max retries exceeded
+            RA -->> Planner: RetrievalError { reason: EMBED_FAIL }
+            RA ->> EB: Publish retrieval_failed + DLQ
+        end
+    end
+
+    EM -->>- RA: EmbeddingVector (float[])
+
+    RA ->>+ VDB: query(vector, top_k, similarity_threshold=0.72)
+
+    alt VectorDB Unavailable
+        VDB -->> RA: ConnectionError
+        RA ->> EB: Publish retrieval_failed event
+        RA -->> Planner: RetrievalError { reason: DB_UNAVAILABLE }
+    end
+
+    VDB -->>- RA: [{ chunk, score, doc_id }] × top_k
+
+    Note over RA: Check result set & similarity scores
+    alt Empty Result Set
+        RA -->> Planner: RetrievalError { reason: NO_RESULTS }
+        RA ->> EB: Publish retrieval_failed event
+    else Low Confidence (max_score < 0.72)
+        RA ->> RA: Attach LowConfidence warning flag
+    end
+
+    RA ->> RA: Build RetrievalResult { chunks, scores, citations }
+
+    RA ->>+ PG: INSERT provenance log (sub_task_id, doc_ids, scores, ts)
+    PG -->>- RA: ACK
+
+    RA ->> EB: Publish retrieval_complete { sub_task_id }
+    RA -->>- Planner: RetrievalResult { chunks[], scores[], citations[], warnings? }
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════
+       DIAGRAM 3 — CLASS
+  ════════════════════════════════════ -->
+  <div class="diagram-section">
+    <div class="section-header">
+      <div class="section-num">03</div>
+      <div class="section-info">
+        <h2>Class Diagram</h2>
+        <p>Data model · attributes · relationships · methods</p>
+      </div>
+      <div class="badge badge-3">Structure</div>
+    </div>
+    <div class="diagram-box">
+      <div class="mermaid">
+classDiagram
+    direction LR
+
+    class RetrieverAgent {
+        +String agent_id
+        +String name
+        +int max_retries
+        +float similarity_threshold
+        +int timeout_ms
+        +AgentStatus status
+        +validate(request: TaskRequest) bool
+        +embed(text: str) EmbeddingVector
+        +query_vector_db(vec: EmbeddingVector, top_k: int) list~Chunk~
+        +build_result(chunks: list~Chunk~) RetrievalResult
+        +log_provenance(result: RetrievalResult) void
+        +emit_event(event: AgentEvent) void
+        +run(request: TaskRequest) RetrievalResult
+    }
+
+    class TaskRequest {
+        +UUID sub_task_id
+        +String user_goal
+        +int top_k
+        +DateTime created_at
+        +String origin_agent
+        +validate() bool
+    }
+
+    class EmbeddingVector {
+        +UUID request_id
+        +float[] values
+        +int dimensions
+        +String model_version
+        +DateTime generated_at
+    }
+
+    class Chunk {
+        +String doc_id
+        +String content
+        +float similarity_score
+        +Dict metadata
+        +String source_ref
+    }
+
+    class RetrievalResult {
+        +UUID sub_task_id
+        +list~Chunk~ chunks
+        +float max_similarity
+        +bool low_confidence
+        +list~String~ citations
+        +DateTime retrieved_at
+        +String agent_version
+    }
+
+    class EmbeddingAdapter {
+        +String model_name
+        +String endpoint_url
+        +int timeout_ms
+        +int retry_limit
+        +embed(text: str) EmbeddingVector
+        +health_check() bool
+    }
+
+    class VectorDBAdapter {
+        +String db_type
+        +String host
+        +String collection
+        +float default_threshold
+        +query(vec: EmbeddingVector, top_k: int) list~Chunk~
+        +health_check() bool
+    }
+
+    class PostgresAdapter {
+        +String connection_string
+        +insert_provenance(result: RetrievalResult) void
+        +fetch_by_task(sub_task_id: UUID) ProvenanceRecord
+    }
+
+    class EventBusAdapter {
+        +String backend
+        +String channel
+        +publish(event: AgentEvent) void
+        +subscribe(channel: str) void
+    }
+
+    class AgentEvent {
+        +String event_type
+        +UUID sub_task_id
+        +String status
+        +Dict payload
+        +DateTime timestamp
+    }
+
+    class RetrievalError {
+        +String reason
+        +UUID sub_task_id
+        +int retry_count
+        +DateTime failed_at
+    }
+
+    class Validator {
+        +validate_schema(req: TaskRequest) bool
+        +validate_similarity(chunks: list~Chunk~, threshold: float) bool
+        +validate_result_non_empty(chunks: list~Chunk~) bool
+    }
+
+    %% Relationships
+    RetrieverAgent --> TaskRequest      : receives
+    RetrieverAgent --> RetrievalResult  : produces
+    RetrieverAgent --> RetrievalError   : raises
+    RetrieverAgent *-- EmbeddingAdapter : uses
+    RetrieverAgent *-- VectorDBAdapter  : uses
+    RetrieverAgent *-- PostgresAdapter  : uses
+    RetrieverAgent *-- EventBusAdapter  : uses
+    RetrieverAgent *-- Validator        : delegates
+
+    EmbeddingAdapter ..> EmbeddingVector : creates
+    VectorDBAdapter  ..> Chunk           : returns
+    RetrieverAgent   ..> AgentEvent      : emits
+
+    RetrievalResult  o-- Chunk           : contains
+    AgentEvent       --> RetrievalResult : references
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════
+       DIAGRAM 4 — STATE
+  ════════════════════════════════════ -->
+  <div class="diagram-section">
+    <div class="section-header">
+      <div class="section-num">04</div>
+      <div class="section-info">
+        <h2>State Diagram</h2>
+        <p>Agent lifecycle · transitions · terminal conditions</p>
+      </div>
+      <div class="badge badge-4">Lifecycle</div>
+    </div>
+    <div class="diagram-box">
+      <div class="mermaid">
+stateDiagram-v2
+    direction TB
+
+    [*] --> Idle : Agent Initialized
+
+    Idle --> Validating : TaskRequest received
+
+    Validating --> Embedding  : request_valid = true
+    Validating --> Failed     : request_valid = false\n[ValidationError emitted]
+
+    Embedding --> QueryingDB  : embedding_success = true
+    Embedding --> Retrying    : embedding_error = true\n[retry_count < max_retries]
+    Embedding --> Failed      : embedding_error = true\n[retry_count >= max_retries]
+
+    Retrying --> Embedding    : wait(backoff) → retry
+    Retrying --> Failed       : max_retries_exceeded
+
+    QueryingDB --> Evaluating : db_query_success = true
+    QueryingDB --> Retrying   : db_unavailable = true\n[retry_count < max_retries]
+    QueryingDB --> Failed     : db_unavailable = true\n[retry_count >= max_retries]
+
+    Evaluating --> Building   : result_non_empty = true\n[max_similarity >= 0.72]
+    Evaluating --> Building   : result_non_empty = true\n[max_similarity < 0.72]\n(low_confidence flag set)
+    Evaluating --> Failed     : result_empty = true
+
+    Building --> Persisting   : RetrievalResult built
+
+    Persisting --> Completed  : provenance logged\nevent emitted to EventBus
+
+    Failed --> Idle           : error_response sent\nDLQ notified
+    Completed --> Idle        : result returned to Planner
+
+    note right of Idle
+        Listening on EventBus
+        for next TaskRequest
+    end note
+
+    note right of Retrying
+        Exponential backoff:
+        100ms · 200ms · 400ms
+        Max 3 retries
+    end note
+
+    note right of Evaluating
+        Threshold: similarity ≥ 0.72
+        LowConfidence flag ≠ failure
+        Empty result = hard failure
+    end note
+
+    state Failed {
+        [*] --> LoggingError
+        LoggingError --> EmittingFailEvent
+        EmittingFailEvent --> PublishingDLQ
+        PublishingDLQ --> [*]
+    }
+
+    state Completed {
+        [*] --> LoggingProvenance
+        LoggingProvenance --> EmittingSuccessEvent
+        EmittingSuccessEvent --> ReturningResult
+        ReturningResult --> [*]
+    }
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ FOOTER ════ -->
+  <footer>
+    <span>SHADOW · RETRIEVER AGENT · DIAGRAM SUITE</span>
+    <span>LANGRAPH + CREWAI ARCHITECTURE · v1.0</span>
+  </footer>
+
+</div>
+
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'base',
+    themeVariables: {
+      primaryColor: '#0d0f17',
+      primaryTextColor: '#d4ddf7',
+      primaryBorderColor: '#1e2236',
+      lineColor: '#5a6585',
+      secondaryColor: '#11141f',
+      tertiaryColor: '#0a0f1a',
+      background: '#07080d',
+      mainBkg: '#0d0f17',
+      nodeBorder: '#1e2236',
+      clusterBkg: '#11141f',
+      titleColor: '#d4ddf7',
+      edgeLabelBackground: '#07080d',
+      attributeBackgroundColorEven: '#0d0f17',
+      attributeBackgroundColorOdd: '#11141f',
+
+      /* class diagram */
+      classText: '#d4ddf7',
+
+      /* sequence diagram */
+      actorBkg: '#0d1a14',
+      actorBorder: '#00f5c4',
+      actorTextColor: '#00f5c4',
+      actorLineColor: '#1e2236',
+      signalColor: '#5a6585',
+      signalTextColor: '#d4ddf7',
+      labelBoxBkgColor: '#0d0f17',
+      labelBoxBorderColor: '#1e2236',
+      labelTextColor: '#d4ddf7',
+      loopTextColor: '#d4ddf7',
+      noteBkgColor: '#0e0e1f',
+      noteBorderColor: '#7b61ff',
+      noteTextColor: '#b8b0ff',
+      activationBorderColor: '#7b61ff',
+      activationBkgColor: '#0e0e1f',
+      altSectionBkgColor: '#0a0f1a',
+
+      /* state diagram */
+      stateBkg: '#0d0f17',
+      stateBorder: '#1e2236',
+      fillType0: '#0d1a14',
+      fillType1: '#0e0e1f',
+    },
+    flowchart: { htmlLabels: true, curve: 'basis' },
+    sequence: { actorMargin: 60, width: 160, height: 60, boxMargin: 10, mirrorActors: false },
+    classDiagram: { diagramPadding: 20 },
+  });
+</script>
+</body>
+</html>

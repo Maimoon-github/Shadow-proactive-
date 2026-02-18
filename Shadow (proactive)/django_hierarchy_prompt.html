@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Django Project Hierarchy · Prompt Blueprint</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=IBM+Plex+Mono:wght@300;400;500&family=Literata:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --paper:   #f5f0e8;
+    --paper2:  #ede8df;
+    --ink:     #1a1510;
+    --ink2:    #3d3428;
+    --muted:   #8c7e6a;
+    --rule:    #c8bfad;
+    --accent:  #b5401c;
+    --accent2: #2b5c8a;
+    --accent3: #2d7a4f;
+    --tag-bg:  #e8e2d8;
+    --code-bg: #1a1510;
+    --code-fg: #e8dfc8;
+    --code-green: #7ec8a0;
+    --code-blue:  #7ab8d4;
+    --code-yellow:#e8c97a;
+    --code-red:   #e07878;
+    --code-muted: #6e6358;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Literata', Georgia, serif;
+    font-size: 15px;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  /* ── paper texture ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+    pointer-events: none;
+  }
+
+  /* ── layout ── */
+  .page {
+    position: relative; z-index: 1;
+    max-width: 940px;
+    margin: 0 auto;
+    padding: 0 2rem 6rem;
+  }
+
+  /* ── masthead ── */
+  .masthead {
+    border-bottom: 3px double var(--rule);
+    padding: 3.5rem 0 2rem;
+    margin-bottom: 0;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: end;
+    gap: 2rem;
+  }
+
+  .issue-line {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 1rem;
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .issue-line span { border-left: 1px solid var(--rule); padding-left: 1.5rem; }
+  .issue-line span:first-child { border: none; padding: 0; }
+
+  h1 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 900;
+    font-size: clamp(2.4rem, 5.5vw, 4.2rem);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+
+  h1 em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .kicker {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border-top: 2px solid var(--accent);
+    display: inline-block;
+    padding-top: 0.3rem;
+    margin-bottom: 0.8rem;
+  }
+
+  .byline {
+    font-size: 0.78rem;
+    color: var(--muted);
+    font-style: italic;
+    margin-top: 1rem;
+    border-top: 1px solid var(--rule);
+    padding-top: 0.7rem;
+  }
+
+  .copy-all-btn {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 0.7rem 1.2rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.2s;
+    align-self: start;
+    margin-top: 2rem;
+  }
+
+  .copy-all-btn:hover { background: var(--ink); }
+
+  /* ── intro band ── */
+  .intro-band {
+    background: var(--ink);
+    color: var(--code-fg);
+    padding: 1.5rem 2rem;
+    margin: 0 -2rem;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    line-height: 1.8;
+    letter-spacing: 0.02em;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .intro-band::after {
+    content: '» USAGE: copy the prompt below → paste into any LLM → receive full Django structure «';
+    position: absolute;
+    bottom: 0.4rem; right: 1.5rem;
+    font-size: 0.55rem;
+    color: var(--code-muted);
+    letter-spacing: 0.1em;
+  }
+
+  .intro-band .label {
+    color: var(--code-yellow);
+    margin-right: 0.5rem;
+  }
+
+  /* ── section ── */
+  .section {
+    padding: 2.5rem 0 0;
+    animation: fadeIn 0.5s ease both;
+  }
+
+  .section + .section {
+    border-top: 1px solid var(--rule);
+    margin-top: 2.5rem;
+  }
+
+  .section-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.3rem;
+  }
+
+  h2 {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    font-size: 1.4rem;
+    color: var(--ink);
+    margin-bottom: 1rem;
+    letter-spacing: -0.01em;
+  }
+
+  h2 .num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 300;
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-right: 0.6rem;
+  }
+
+  /* ── the prompt box ── */
+  .prompt-wrap {
+    position: relative;
+    margin-top: 1.2rem;
+  }
+
+  .prompt-box {
+    background: var(--code-bg);
+    color: var(--code-fg);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    line-height: 1.85;
+    padding: 2rem 2rem 2rem;
+    border-left: 3px solid var(--accent);
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow-x: auto;
+    position: relative;
+  }
+
+  .prompt-box .c  { color: var(--code-muted); font-style: italic; }   /* comment */
+  .prompt-box .k  { color: var(--code-yellow); }                       /* keyword */
+  .prompt-box .s  { color: var(--code-green); }                        /* string/value */
+  .prompt-box .h  { color: var(--code-blue); font-weight: 500; }       /* heading token */
+  .prompt-box .e  { color: var(--code-red); }                          /* emphasis/error */
+  .prompt-box .p  { color: #c8a87a; }                                  /* path */
+  .prompt-box .br { display: block; height: 0.6rem; }                  /* blank row */
+
+  .copy-btn {
+    position: absolute;
+    top: 0.8rem; right: 0.8rem;
+    background: #2e2720;
+    color: var(--code-yellow);
+    border: 1px solid #3e3628;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.58rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.35rem 0.8rem;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .copy-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .copy-btn.copied { background: var(--accent3); color: #fff; border-color: var(--accent3); }
+
+  /* ── aside / annotation ── */
+  .annotation {
+    border: 1px solid var(--rule);
+    background: var(--paper2);
+    padding: 1rem 1.2rem;
+    margin-top: 1rem;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.8rem;
+    align-items: start;
+  }
+
+  .ann-icon {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--accent2);
+    border: 1px solid var(--accent2);
+    padding: 0.15rem 0.4rem;
+    white-space: nowrap;
+    margin-top: 0.2rem;
+  }
+
+  .annotation p {
+    font-size: 0.8rem;
+    color: var(--ink2);
+    font-style: italic;
+    line-height: 1.6;
+  }
+
+  /* ── spec table ── */
+  .spec-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+    font-size: 0.78rem;
+  }
+
+  .spec-table th {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.58rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 0.5rem 1rem;
+    background: var(--paper2);
+    text-align: left;
+    border-bottom: 2px solid var(--rule);
+  }
+
+  .spec-table td {
+    padding: 0.65rem 1rem;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: top;
+    line-height: 1.5;
+  }
+
+  .spec-table tr:last-child td { border-bottom: none; }
+
+  .spec-table td:first-child {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--accent2);
+    white-space: nowrap;
+  }
+
+  .spec-table td:last-child { color: var(--ink2); font-size: 0.77rem; }
+
+  .pill {
+    display: inline-block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.58rem;
+    letter-spacing: 0.08em;
+    padding: 0.15rem 0.5rem;
+    border-radius: 2px;
+    margin: 0.1rem 0.15rem 0.1rem 0;
+  }
+
+  .pill-red   { background: #f0e0db; color: var(--accent); }
+  .pill-blue  { background: #dbe8f0; color: var(--accent2); }
+  .pill-green { background: #dceee4; color: var(--accent3); }
+  .pill-tan   { background: var(--tag-bg); color: var(--muted); }
+
+  /* ── footer ── */
+  footer {
+    border-top: 3px double var(--rule);
+    padding: 2rem 0 0;
+    margin-top: 4rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--muted);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  /* ── divider ornament ── */
+  .ornament {
+    text-align: center;
+    color: var(--rule);
+    font-size: 1.1rem;
+    letter-spacing: 0.6rem;
+    padding: 1.5rem 0 0;
+    user-select: none;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- ════ MASTHEAD ════ -->
+  <header class="masthead">
+    <div>
+      <div class="kicker">Prompt Blueprint</div>
+      <div class="issue-line">
+        <span>Shadow Architecture</span>
+        <span>Django + Tailwind CSS</span>
+        <span>Full-Stack + Admin</span>
+        <span>v1.0</span>
+      </div>
+      <h1>Generate a<br><em>Complete Django</em><br>Project Hierarchy</h1>
+      <p class="byline">A production-ready prompt for scaffolding Django full-stack applications — frontend, backend, and admin dashboard — with Tailwind CSS styling.</p>
+    </div>
+    <button class="copy-all-btn" onclick="copyAll()">⎘ Copy Full Prompt</button>
+  </header>
+
+  <!-- ════ INTRO BAND ════ -->
+  <div class="intro-band">
+    <span class="label">MODEL TARGET →</span> GPT-4o · Claude · Gemini · any frontier LLM
+    <br>
+    <span class="label">OUTPUT TYPE  →</span> Directory tree + file descriptions + feature registry + Tailwind config
+    <br>
+    <span class="label">SCOPE        →</span> Multi-app Django project · REST API · Admin dashboard · Tailwind 3.x · Django 5.x
+  </div>
+
+  <!-- ════ SPEC TABLE ════ -->
+  <div class="section">
+    <div class="section-label">Prompt Specification</div>
+    <h2><span class="num">§0</span>What This Prompt Produces</h2>
+
+    <table class="spec-table">
+      <thead>
+        <tr>
+          <th>Layer</th>
+          <th>Contents Generated</th>
+          <th>Tags</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Project Root</td>
+          <td>manage.py, config/, requirements, docker-compose, .env.example, Makefile</td>
+          <td><span class="pill pill-tan">scaffold</span></td>
+        </tr>
+        <tr>
+          <td>Backend Apps</td>
+          <td>users, core, api, tasks/agents, notifications — each with models, views, serializers, URLs, admin, signals, tests</td>
+          <td><span class="pill pill-blue">django</span><span class="pill pill-blue">DRF</span></td>
+        </tr>
+        <tr>
+          <td>Frontend</td>
+          <td>templates/, static/, Tailwind config, components, pages — base layout, auth pages, dashboard, detail views</td>
+          <td><span class="pill pill-green">tailwind</span><span class="pill pill-green">jinja2</span></td>
+        </tr>
+        <tr>
+          <td>Admin Dashboard</td>
+          <td>Custom admin site, model admin classes, list/detail views, inline actions, filters, charts widget</td>
+          <td><span class="pill pill-red">admin</span></td>
+        </tr>
+        <tr>
+          <td>Async / Celery</td>
+          <td>tasks/, celery.py, beat schedules, worker config, Redis broker setup</td>
+          <td><span class="pill pill-tan">celery</span><span class="pill pill-tan">redis</span></td>
+        </tr>
+        <tr>
+          <td>Auth &amp; Security</td>
+          <td>Custom user model, JWT auth, permissions, 2FA scaffold, CORS, CSP headers</td>
+          <td><span class="pill pill-red">security</span></td>
+        </tr>
+        <tr>
+          <td>MLOps / RAG</td>
+          <td>agents/ app with LangGraph/CrewAI integration stubs, vector DB adapter, embedding service</td>
+          <td><span class="pill pill-blue">agentic</span><span class="pill pill-blue">RAG</span></td>
+        </tr>
+        <tr>
+          <td>CI / DevOps</td>
+          <td>.github/workflows, Dockerfile, nginx.conf, gunicorn config, pre-commit hooks</td>
+          <td><span class="pill pill-tan">devops</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="annotation">
+      <div class="ann-icon">NOTE</div>
+      <p>The prompt instructs the LLM to produce a <strong>three-column output</strong>: (1) the full directory tree, (2) a feature registry mapping each file to its responsibility, and (3) a Tailwind CSS configuration skeleton. Paste the prompt verbatim for best results.</p>
+    </div>
+  </div>
+
+  <!-- ════ THE PROMPT ════ -->
+
+  <!-- BLOCK 1 -->
+  <div class="section">
+    <div class="section-label">Prompt · Block 01 of 06</div>
+    <h2><span class="num">§1</span>Role &amp; Output Format Instructions</h2>
+    <div class="prompt-wrap">
+      <div class="prompt-box" id="block1"><span class="c">##############################################################</span>
+<span class="c"># ROLE</span>
+<span class="c">##############################################################</span>
+<span class="k">You are</span> an expert Django architect with deep knowledge of:
+<span class="s">- Django 5.x full-stack development</span>
+<span class="s">- Django REST Framework (DRF) for API design</span>
+<span class="s">- Tailwind CSS 3.x for utility-first styling</span>
+<span class="s">- Celery + Redis for async task queues</span>
+<span class="s">- Custom Django Admin with advanced dashboards</span>
+<span class="s">- Agentic AI / RAG integration patterns (LangGraph, CrewAI)</span>
+<span class="s">- Production DevOps (Docker, Nginx, GitHub Actions)</span>
+<br>
+<span class="c">##############################################################</span>
+<span class="c"># OUTPUT FORMAT — FOLLOW EXACTLY</span>
+<span class="c">##############################################################</span>
+<span class="k">Your output must contain THREE clearly labelled sections:</span>
+
+<span class="h">SECTION A — DIRECTORY TREE</span>
+<span class="s">  A complete, annotated directory tree using tree-style</span>
+<span class="s">  ASCII characters. Every file and folder must include a</span>
+<span class="s">  short inline comment ( # description ) explaining its role.</span>
+<span class="s">  Use consistent 4-space indentation per nesting level.</span>
+<br>
+<span class="h">SECTION B — FEATURE REGISTRY</span>
+<span class="s">  A structured table with columns:</span>
+<span class="s">  [ App | File | Class/Function | Responsibility | Depends On ]</span>
+<span class="s">  Cover every model, view, serializer, URL conf, admin class,</span>
+<span class="s">  signal, Celery task, and utility defined in the project.</span>
+<br>
+<span class="h">SECTION C — TAILWIND CONFIG SKELETON</span>
+<span class="s">  The full tailwind.config.js with:</span>
+<span class="s">  - content paths pointing to Django templates and static files</span>
+<span class="s">  - custom theme extensions (colors, fonts, spacing, screens)</span>
+<span class="s">  - required plugins (forms, typography, line-clamp)</span>
+<span class="s">  - dark mode strategy (class-based)</span>
+<span class="s">  - a matching postcss.config.js</span>
+<br>
+<span class="k">Do NOT</span> generate actual implementation code in this output.
+<span class="k">Do NOT</span> truncate or abbreviate the tree — show every file.
+<span class="k">Do NOT</span> add commentary outside the three sections.
+</div>
+      <button class="copy-btn" onclick="copyBlock('block1', this)">Copy</button>
+    </div>
+  </div>
+
+  <div class="ornament">· · · ✦ · · ·</div>
+
+  <!-- BLOCK 2 -->
+  <div class="section">
+    <div class="section-label">Prompt · Block 02 of 06</div>
+    <h2><span class="num">§2</span>Project Identity &amp; Global Constraints</h2>
+    <div class="prompt-wrap">
+      <div class="prompt-box" id="block2"><span class="c">##############################################################</span>
+<span class="c"># PROJECT IDENTITY</span>
+<span class="c">##############################################################</span>
+<span class="k">Project name:</span>    <span class="s">shadow_platform</span>
+<span class="k">Django version:</span>  <span class="s">5.x</span>
+<span class="k">Python version:</span>  <span class="s">3.12+</span>
+<span class="k">Database:</span>        <span class="s">PostgreSQL 16 (primary), Redis 7 (cache + broker)</span>
+<span class="k">Styling:</span>         <span class="s">Tailwind CSS 3.x (CDN in dev, built in prod)</span>
+<span class="k">API layer:</span>       <span class="s">Django REST Framework + drf-spectacular (OpenAPI docs)</span>
+<span class="k">Auth:</span>            <span class="s">djangorestframework-simplejwt + allauth (social login)</span>
+<span class="k">Async tasks:</span>     <span class="s">Celery 5.x + Redis broker + django-celery-beat</span>
+<span class="k">Admin UI:</span>        <span class="s">Custom Django Admin (unfold or jazzmin theme)</span>
+<span class="k">Tests:</span>           <span class="s">pytest-django + factory_boy + coverage</span>
+<span class="k">Containerisation:</span><span class="s">Docker + docker-compose (dev + prod profiles)</span>
+<span class="k">CI/CD:</span>           <span class="s">GitHub Actions (.github/workflows/)</span>
+<br>
+<span class="c">##############################################################</span>
+<span class="c"># GLOBAL CONSTRAINTS — apply to all apps</span>
+<span class="c">##############################################################</span>
+<span class="s">- All models must define __str__, get_absolute_url,</span>
+<span class="s">  created_at / updated_at (auto timestamps), and a UUID pk.</span>
+<span class="s">- All views must be class-based (CBVs) or DRF ViewSets.</span>
+<span class="s">- All API endpoints must be versioned under /api/v1/.</span>
+<span class="s">- All templates must extend base.html and use Tailwind classes.</span>
+<span class="s">- All admin classes must register with @admin.register decorator.</span>
+<span class="s">- All Celery tasks must be decorated with @shared_task.</span>
+<span class="s">- All sensitive config must live in .env (via python-decouple).</span>
+<span class="s">- All apps must have an apps.py, tests/, and migrations/.</span>
+<span class="s">- Separate settings: base.py, development.py, production.py.</span>
+</div>
+      <button class="copy-btn" onclick="copyBlock('block2', this)">Copy</button>
+    </div>
+  </div>
+
+  <div class="ornament">· · · ✦ · · ·</div>
+
+  <!-- BLOCK 3 -->
+  <div class="section">
+    <div class="section-label">Prompt · Block 03 of 06</div>
+    <h2><span class="num">§3</span>Django Apps — Features &amp; Responsibilities</h2>
+    <div class="prompt-wrap">
+      <div class="prompt-box" id="block3"><span class="c">##############################################################</span>
+<span class="c"># APP DEFINITIONS — generate all of the following apps</span>
+<span class="c">##############################################################</span>
+
+<span class="h">APP: config/</span>   <span class="c"># project-level config, not an installable app</span>
+<span class="s">  settings/base.py         — shared settings, installed apps, middleware</span>
+<span class="s">  settings/development.py  — debug toolbar, whitenoise, local DB</span>
+<span class="s">  settings/production.py   — sentry, secure cookies, HSTS, S3 storage</span>
+<span class="s">  urls.py                  — root URL conf, admin, api/v1/, static</span>
+<span class="s">  wsgi.py + asgi.py        — WSGI/ASGI entry points</span>
+<span class="s">  celery.py                — Celery app initialisation</span>
+<br>
+<span class="h">APP: apps/users/</span>
+<span class="s">  models.py     — CustomUser(AbstractBaseUser): uuid pk, email auth,</span>
+<span class="s">                  role (ADMIN|STAFF|VIEWER), avatar, bio, 2FA flag</span>
+<span class="s">  managers.py   — CustomUserManager with create_user/create_superuser</span>
+<span class="s">  serializers.py— RegisterSerializer, LoginSerializer, ProfileSerializer</span>
+<span class="s">  views.py      — AuthViewSet (register, login, logout, refresh token)</span>
+<span class="s">                  ProfileViewSet (retrieve, partial_update)</span>
+<span class="s">  urls.py       — /api/v1/auth/  /api/v1/users/</span>
+<span class="s">  admin.py      — CustomUserAdmin: list_display, search, filters,</span>
+<span class="s">                  inlines for sessions and audit log</span>
+<span class="s">  signals.py    — post_save → send welcome email task</span>
+<span class="s">  permissions.py— IsOwnerOrAdmin, IsStaffOrReadOnly</span>
+<span class="s">  tasks.py      — send_welcome_email, send_password_reset_email</span>
+<span class="s">  forms.py      — CustomAuthForm, ProfileUpdateForm (for non-API views)</span>
+<span class="s">  tests/        — test_models.py, test_views.py, test_serializers.py,</span>
+<span class="s">                  factories.py (factory_boy)</span>
+<br>
+<span class="h">APP: apps/core/</span>
+<span class="s">  models.py     — AuditLog(user, action, model_name, object_id,</span>
+<span class="s">                  before_state, after_state, ip_address, timestamp)</span>
+<span class="s">                  Notification(user, title, body, read, created_at)</span>
+<span class="s">                  SystemConfig(key, value, description, updated_by)</span>
+<span class="s">  mixins.py     — AuditMixin, TimestampMixin, SoftDeleteMixin</span>
+<span class="s">  utils.py      — paginate_queryset, build_api_response,</span>
+<span class="s">                  generate_signed_url, format_datetime</span>
+<span class="s">  exceptions.py — ServiceUnavailable, ValidationFailed, NotFound (DRF)</span>
+<span class="s">  middleware.py — RequestLoggingMiddleware, TimezoneMiddleware</span>
+<span class="s">  admin.py      — AuditLogAdmin (read-only), NotificationAdmin,</span>
+<span class="s">                  SystemConfigAdmin with inline edit</span>
+<span class="s">  tasks.py      — cleanup_old_audit_logs, send_bulk_notifications</span>
+<span class="s">  tests/        — test_models.py, test_utils.py, test_middleware.py</span>
+<br>
+<span class="h">APP: apps/agents/</span>   <span class="c"># Agentic AI + RAG — integrates with Shadow architecture</span>
+<span class="s">  models.py     — AgentRun(id, user, goal, status, result, error,</span>
+<span class="s">                  started_at, finished_at, sub_tasks JSON)</span>
+<span class="s">                  RetrievalRecord(run, query, chunks JSON,</span>
+<span class="s">                  similarity_scores JSON, provenance, created_at)</span>
+<span class="s">                  EmbeddingCache(text_hash, vector JSON, model_ver)</span>
+<span class="s">  serializers.py— AgentRunSerializer, RetrievalRecordSerializer</span>
+<span class="s">  views.py      — AgentRunViewSet (create, retrieve, list)</span>
+<span class="s">                  RetrievalRecordViewSet (list, retrieve)</span>
+<span class="s">  urls.py       — /api/v1/agents/  /api/v1/retrievals/</span>
+<span class="s">  services/     — planner.py, retriever.py, executor.py, verifier.py</span>
+<span class="s">  adapters/     — vector_db.py (Milvus/Weaviate), embedding.py (OpenAI)</span>
+<span class="s">                  event_bus.py (Redis Streams)</span>
+<span class="s">  tasks.py      — run_agent_pipeline, embed_and_store,</span>
+<span class="s">                  cleanup_old_runs, notify_run_complete</span>
+<span class="s">  admin.py      — AgentRunAdmin: run status, sub_task inspector,</span>
+<span class="s">                  RetrievalRecordInline, action to re-run failed runs</span>
+<span class="s">  tests/        — test_models.py, test_views.py, test_services.py,</span>
+<span class="s">                  test_adapters.py, factories.py</span>
+<br>
+<span class="h">APP: apps/dashboard/</span>  <span class="c"># frontend-only, template-driven views</span>
+<span class="s">  views.py      — DashboardView (login required, summary stats),</span>
+<span class="s">                  AgentRunListView, AgentRunDetailView,</span>
+<span class="s">                  NotificationListView, ProfileView, SettingsView</span>
+<span class="s">  urls.py       — / (dashboard), /agents/, /agents/<uuid>/,</span>
+<span class="s">                  /notifications/, /profile/, /settings/</span>
+<span class="s">  context_processors.py — unread_notification_count, current_user_role</span>
+<span class="s">  tests/        — test_views.py</span>
+</div>
+      <button class="copy-btn" onclick="copyBlock('block3', this)">Copy</button>
+    </div>
+    <div class="annotation">
+      <div class="ann-icon">TIP</div>
+      <p>The <strong>apps/agents/</strong> app directly maps to the Retriever + Planner + Executor agents from the Shadow architecture document — keeping the Django ORM as the authoritative state store for all agentic runs.</p>
+    </div>
+  </div>
+
+  <div class="ornament">· · · ✦ · · ·</div>
+
+  <!-- BLOCK 4 -->
+  <div class="section">
+    <div class="section-label">Prompt · Block 04 of 06</div>
+    <h2><span class="num">§4</span>Frontend Templates &amp; Static Structure</h2>
+    <div class="prompt-wrap">
+      <div class="prompt-box" id="block4"><span class="c">##############################################################</span>
+<span class="c"># FRONTEND — templates/ and static/ directory rules</span>
+<span class="c">##############################################################</span>
+
+<span class="h">templates/</span>
+<span class="s">  base.html                 — document shell: charset, Tailwind CDN/link,</span>
+<span class="s">                              CSRF meta tag, {% block head %},</span>
+<span class="s">                              navbar component include, sidebar include,</span>
+<span class="s">                              {% block content %}, toast container,</span>
+<span class="s">                              {% block scripts %}, Alpine.js CDN</span>
+<br>
+<span class="s">  components/               — reusable partials (included via {% include %})</span>
+<span class="s">    _navbar.html            — top nav: logo, search bar, notification bell,</span>
+<span class="s">                              user avatar dropdown (Tailwind + Alpine.js)</span>
+<span class="s">    _sidebar.html           — collapsible left nav with icon + label items,</span>
+<span class="s">                              active state detection via request.resolver_match</span>
+<span class="s">    _breadcrumb.html        — dynamic breadcrumb using {% block breadcrumb %}</span>
+<span class="s">    _pagination.html        — prev/next with page numbers, Tailwind styled</span>
+<span class="s">    _alert.html             — success / error / warning / info toast banners</span>
+<span class="s">    _empty_state.html       — icon + headline + CTA for empty querysets</span>
+<span class="s">    _stat_card.html         — metric card: icon, label, value, delta indicator</span>
+<span class="s">    _modal.html             — Alpine.js controlled modal overlay + panel</span>
+<span class="s">    _table.html             — sortable, striped data table with action column</span>
+<span class="s">    _badge.html             — status pill component (success/warning/error)</span>
+<br>
+<span class="s">  pages/auth/</span>
+<span class="s">    login.html              — full-screen split layout, email+password form,</span>
+<span class="s">                              social login buttons, Tailwind form styling</span>
+<span class="s">    register.html           — registration form, password strength meter</span>
+<span class="s">    password_reset.html     — email input form, confirmation message</span>
+<span class="s">    password_reset_confirm.html</span>
+<br>
+<span class="s">  pages/dashboard/</span>
+<span class="s">    index.html              — 4-column stat cards, recent agent runs table,</span>
+<span class="s">                              activity feed, quick-action FAB button</span>
+<span class="s">    agent_run_list.html     — filterable table, status badges, pagination</span>
+<span class="s">    agent_run_detail.html   — timeline view of sub-tasks, JSON inspector,</span>
+<span class="s">                              retrieval chunks accordion, re-run button</span>
+<span class="s">    notifications.html      — grouped notification feed, mark-all-read action</span>
+<span class="s">    profile.html            — avatar upload, bio edit form, 2FA toggle card</span>
+<span class="s">    settings.html           — tabbed settings: account, security, integrations</span>
+<br>
+<span class="s">  pages/errors/</span>
+<span class="s">    400.html  403.html  404.html  500.html  — custom Tailwind error pages</span>
+<br>
+<span class="h">static/</span>
+<span class="s">  css/</span>
+<span class="s">    input.css               — @tailwind base; @tailwind components;</span>
+<span class="s">                              @tailwind utilities; custom @layer components</span>
+<span class="s">    output.css              — compiled Tailwind (gitignored in dev)</span>
+<span class="s">  js/</span>
+<span class="s">    app.js                  — Alpine.js store init, HTMX config, toast mgr</span>
+<span class="s">    chart.js                — Chart.js dashboard widget wrappers</span>
+<span class="s">    agent_run.js            — polling logic for live AgentRun status updates</span>
+<span class="s">  img/</span>
+<span class="s">    logo.svg  favicon.ico  avatar_placeholder.webp</span>
+<br>
+<span class="c">##############################################################</span>
+<span class="c"># TAILWIND DESIGN TOKENS — encode in tailwind.config.js</span>
+<span class="c">##############################################################</span>
+<span class="s">Colors:</span>
+<span class="s">  primary: { 50..950 }    — brand blue-grey</span>
+<span class="s">  accent:  { 50..950 }    — teal (agent / retrieval actions)</span>
+<span class="s">  danger:  { 50..950 }    — red (errors, failed states)</span>
+<span class="s">  success: { 50..950 }    — green (completed, verified states)</span>
+<span class="s">  warning: { 50..950 }    — amber (retrying, low-confidence)</span>
+<span class="s">  surface: { DEFAULT, raised, sunken } — neutral card surfaces</span>
+<span class="s">Typography:</span>
+<span class="s">  fontFamily.sans  — ['Geist', 'system-ui']</span>
+<span class="s">  fontFamily.mono  — ['Geist Mono', 'monospace']</span>
+<span class="s">Spacing extensions:</span>
+<span class="s">  18, 22, 26, 30, 34, 72, 80, 88, 96, 128</span>
+<span class="s">Custom screens:</span>
+<span class="s">  xs: 480px, '2xl': 1400px, '3xl': 1600px</span>
+</div>
+      <button class="copy-btn" onclick="copyBlock('block4', this)">Copy</button>
+    </div>
+  </div>
+
+  <div class="ornament">· · · ✦ · · ·</div>
+
+  <!-- BLOCK 5 -->
+  <div class="section">
+    <div class="section-label">Prompt · Block 05 of 06</div>
+    <h2><span class="num">§5</span>Admin Dashboard &amp; DevOps Structure</h2>
+    <div class="prompt-wrap">
+      <div class="prompt-box" id="block5"><span class="c">##############################################################</span>
+<span class="c"># DJANGO ADMIN — custom admin dashboard requirements</span>
+<span class="c">##############################################################</span>
+
+<span class="h">admin_site.py</span>  <span class="c"># custom AdminSite subclass registered as default</span>
+<span class="s">  ShadowAdminSite(AdminSite):</span>
+<span class="s">    site_header     = "Shadow Platform Admin"</span>
+<span class="s">    site_title      = "Shadow Admin"</span>
+<span class="s">    index_title     = "Operations Dashboard"</span>
+<span class="s">    index_template  = "admin/custom_index.html"</span>
+<span class="s">    login_template  = "admin/custom_login.html"</span>
+<br>
+<span class="s">templates/admin/</span>
+<span class="s">  custom_index.html         — override default admin index with:</span>
+<span class="s">                              KPI row (total users, active runs, errors today),</span>
+<span class="s">                              recent AgentRun table, recent AuditLog feed,</span>
+<span class="s">                              Chart.js bar chart for runs-per-day (last 30d),</span>
+<span class="s">                              all styled with Tailwind via inline CDN</span>
+<span class="s">  custom_login.html         — branded login form, dark mode toggle</span>
+<br>
+<span class="h">Per-app admin.py requirements:</span>
+
+<span class="s">apps/users/admin.py</span>
+<span class="s">  @admin.register(CustomUser)</span>
+<span class="s">  class CustomUserAdmin(UserAdmin):</span>
+<span class="s">    list_display    = [email, role, is_active, date_joined, last_login]</span>
+<span class="s">    list_filter     = [role, is_active, is_staff]</span>
+<span class="s">    search_fields   = [email, first_name, last_name]</span>
+<span class="s">    readonly_fields = [date_joined, last_login, uuid pk]</span>
+<span class="s">    fieldsets       = (Personal Info, Permissions, Security, Timestamps)</span>
+<span class="s">    actions         = [deactivate_selected, send_password_reset_selected]</span>
+<span class="s">    inlines         = [AuditLogInline (read-only)]</span>
+<br>
+<span class="s">apps/agents/admin.py</span>
+<span class="s">  @admin.register(AgentRun)</span>
+<span class="s">  class AgentRunAdmin(ModelAdmin):</span>
+<span class="s">    list_display    = [id (truncated), user, status, goal (50 chars),</span>
+<span class="s">                       started_at, duration_display]</span>
+<span class="s">    list_filter     = [status, created_at]</span>
+<span class="s">    search_fields   = [id, user__email, goal]</span>
+<span class="s">    readonly_fields = [id, result JSON pretty, error, started_at, finished_at]</span>
+<span class="s">    inlines         = [RetrievalRecordInline]</span>
+<span class="s">    actions         = [rerun_failed_runs, export_as_json]</span>
+<br>
+<span class="s">apps/core/admin.py</span>
+<span class="s">  @admin.register(AuditLog)  — fully read-only, list + filter only</span>
+<span class="s">  @admin.register(Notification) — mark_read action, user filter</span>
+<span class="s">  @admin.register(SystemConfig)  — key-value inline editor, save triggers cache clear</span>
+<br>
+<span class="c">##############################################################</span>
+<span class="c"># DEVOPS / INFRASTRUCTURE</span>
+<span class="c">##############################################################</span>
+
+<span class="h">Root files:</span>
+<span class="s">  manage.py                 — standard, imports settings via DJANGO_SETTINGS_MODULE</span>
+<span class="s">  pyproject.toml            — tool config: black, isort, mypy, pytest, coverage</span>
+<span class="s">  requirements/</span>
+<span class="s">    base.txt                — django, DRF, psycopg2, celery, redis, decouple, etc.</span>
+<span class="s">    development.txt         — debug-toolbar, factory-boy, pytest-django, coverage</span>
+<span class="s">    production.txt          — gunicorn, sentry-sdk, whitenoise, boto3, django-storages</span>
+<span class="s">  .env.example              — all required env vars with placeholder values</span>
+<span class="s">  Makefile                  — targets: install, migrate, run, test, lint, build-css,</span>
+<span class="s">                              celery-worker, celery-beat, docker-up, docker-down</span>
+<br>
+<span class="h">Docker:</span>
+<span class="s">  Dockerfile                — multi-stage: builder (deps) → runner (slim runtime)</span>
+<span class="s">  docker-compose.yml        — services: web, db (postgres), redis, celery_worker,</span>
+<span class="s">                              celery_beat, nginx; dev profile adds pgadmin</span>
+<span class="s">  nginx/nginx.conf          — upstream gunicorn, static file serving, gzip, SSL stub</span>
+<br>
+<span class="h">GitHub Actions (.github/workflows/):</span>
+<span class="s">  ci.yml                    — on push/PR: lint (ruff), type-check (mypy),</span>
+<span class="s">                              test (pytest + coverage), build Docker image</span>
+<span class="s">  deploy.yml                — on tag: build + push image, SSH deploy to VPS,</span>
+<span class="s">                              run migrations, reload gunicorn</span>
+<span class="s">  security.yml              — weekly: pip-audit, bandit scan, Trivy image scan</span>
+<br>
+<span class="h">Pre-commit (.pre-commit-config.yaml):</span>
+<span class="s">  hooks: ruff, black, isort, mypy, djhtml (template linting), detect-secrets</span>
+</div>
+      <button class="copy-btn" onclick="copyBlock('block5', this)">Copy</button>
+    </div>
+  </div>
+
+  <div class="ornament">· · · ✦ · · ·</div>
+
+  <!-- BLOCK 6 -->
+  <div class="section">
+    <div class="section-label">Prompt · Block 06 of 06</div>
+    <h2><span class="num">§6</span>Final Instruction &amp; Quality Gate</h2>
+    <div class="prompt-wrap">
+      <div class="prompt-box" id="block6"><span class="c">##############################################################</span>
+<span class="c"># FINAL INSTRUCTION — what the output must satisfy</span>
+<span class="c">##############################################################</span>
+
+<span class="k">Now generate the full output in three sections as defined above.</span>
+<span class="k">Before outputting, internally verify the following checklist:</span>
+<br>
+<span class="h">✓  COMPLETENESS</span>
+<span class="s">   Every app listed above appears in the directory tree.</span>
+<span class="s">   Every model, view, serializer, task, admin class, and URL</span>
+<span class="s">   conf has a row in the Feature Registry.</span>
+<span class="s">   The tailwind.config.js covers all design tokens specified.</span>
+<br>
+<span class="h">✓  CONSISTENCY</span>
+<span class="s">   File names in the tree match names in the Feature Registry.</span>
+<span class="s">   URL namespaces in urls.py files are consistent with template</span>
+<span class="s">   {% url %} tag usage described in view annotations.</span>
+<span class="s">   All apps appear in INSTALLED_APPS in settings/base.py.</span>
+<br>
+<span class="h">✓  ARCHITECTURE INTEGRITY</span>
+<span class="s">   No business logic in views.py — it delegates to services/.</span>
+<span class="s">   No raw SQL — use ORM QuerySets and select_related/prefetch.</span>
+<span class="s">   No hardcoded secrets — all sensitive values use env vars.</span>
+<span class="s">   No synchronous I/O in request-response cycle that belongs</span>
+<span class="s">   in a Celery task (email sends, agent runs, embeddings).</span>
+<br>
+<span class="h">✓  TAILWIND CORRECTNESS</span>
+<span class="s">   tailwind.config.js content array must include:</span>
+<span class="s">     "./templates/**/*.html"</span>
+<span class="s">     "./apps/**/templates/**/*.html"</span>
+<span class="s">     "./static/js/**/*.js"</span>
+<span class="s">   All custom component classes defined in @layer components.</span>
+<span class="s">   Dark mode variant active on class="dark" on <html> element.</span>
+<br>
+<span class="h">✓  ADMIN DASHBOARD QUALITY</span>
+<span class="s">   custom_index.html renders real context data from AdminSite.</span>
+<span class="s">   All custom admin actions are registered in actions = [...].</span>
+<span class="s">   All inlines use extra = 0 and show_change_link = True.</span>
+<span class="s">   Admin site is registered as default_auto_field safe.</span>
+<br>
+<span class="e">⚠  DO NOT truncate the directory tree with "..." or [continued].</span>
+<span class="e">⚠  DO NOT omit any app, file, or feature defined above.</span>
+<span class="e">⚠  DO NOT add features not specified — precision over padding.</span>
+<br>
+<span class="k">Begin output now. Start with: SECTION A — DIRECTORY TREE</span>
+</div>
+      <button class="copy-btn" onclick="copyBlock('block6', this)">Copy</button>
+    </div>
+    <div class="annotation">
+      <div class="ann-icon">FINAL</div>
+      <p>Copy all six blocks in sequence and paste into a single LLM prompt. For best results, use a model with a long context window (≥100k tokens). The output will typically span 800–1400 lines. You may append a <strong>domain-specific customisation</strong> (e.g. <em>"this is an e-commerce platform — add an orders app"</em>) immediately before the final instruction block.</p>
+    </div>
+  </div>
+
+  <!-- ════ FOOTER ════ -->
+  <footer>
+    <span>Shadow Platform · Django Prompt Blueprint</span>
+    <span>Django 5.x · Tailwind 3.x · DRF · Celery · Agentic AI</span>
+  </footer>
+
+</div><!-- /page -->
+
+<script>
+  function copyBlock(id, btn) {
+    const el = document.getElementById(id);
+    const text = el.innerText;
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = '✓ Copied';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'Copy';
+        btn.classList.remove('copied');
+      }, 2000);
+    });
+  }
+
+  function copyAll() {
+    const ids = ['block1','block2','block3','block4','block5','block6'];
+    const full = ids.map(id => document.getElementById(id).innerText).join('\n\n');
+    navigator.clipboard.writeText(full).then(() => {
+      const btn = document.querySelector('.copy-all-btn');
+      btn.textContent = '✓ Full Prompt Copied!';
+      setTimeout(() => btn.textContent = '⎘ Copy Full Prompt', 2500);
+    });
+  }
+</script>
+</body>
+</html>
