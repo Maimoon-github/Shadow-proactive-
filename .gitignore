@@ -18,8 +18,6 @@ venv/
 env/
 ENV/
 .env.bak
-C:\Users\Backup\Vs Code\Shadow-proactive-\venv
-venv\Scripts
 
 # ── Environment Variables ────────────────────────────────────
 .env
