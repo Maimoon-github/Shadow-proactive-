@@ -1,0 +1,175 @@
+# ═══════════════════════════════════════════════════════════
+# SHADOW PLATFORM — .gitignore
+# Django 5.x · Python 3.12 · Tailwind 3.x · Docker · Celery
+# ═══════════════════════════════════════════════════════════
+
+# ── Python ───────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+*.pyc
+.Python
+
+# ── Virtual Environments ─────────────────────────────────────
+.venv/
+venv/
+env/
+ENV/
+.env.bak
+C:\Users\Backup\Vs Code\Shadow-proactive-\venv
+venv\Scripts
+
+# ── Environment Variables ────────────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ── Django ───────────────────────────────────────────────────
+*.log
+*.pot
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Media uploads
+media/
+
+# Static (collected)
+staticfiles/
+static/css/output.css
+
+# Django migrations (keep if team-shared, remove if solo)
+# apps/*/migrations/*.py
+# !apps/*/migrations/__init__.py
+
+# ── Tailwind / Node ──────────────────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+.npm
+.pnp
+.pnp.js
+
+# ── Compiled / Build Artifacts ───────────────────────────────
+dist/
+build/
+*.egg-info/
+*.egg
+.eggs/
+*.whl
+*.manifest
+*.spec
+MANIFEST
+
+# ── Testing & Coverage ───────────────────────────────────────
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+*.cover
+.tox/
+nosetests.xml
+test-results/
+
+# ── Type Checking ────────────────────────────────────────────
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pytype/
+.pyre/
+
+# ── Linting ──────────────────────────────────────────────────
+.ruff_cache/
+
+# ── Docker ───────────────────────────────────────────────────
+.dockerignore
+docker-compose.override.yml
+
+# ── Celery ───────────────────────────────────────────────────
+celerybeat-schedule
+celerybeat-schedule.db
+celerybeat.pid
+
+# ── IDEs & Editors ───────────────────────────────────────────
+# VS Code
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json.example
+
+# PyCharm / JetBrains
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim / Emacs
+*.swp
+*.swo
+*~
+\#*\#
+.\#*
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+.fuse_hidden*
+.directory
+.Trash-*
+
+# ── Secrets & Keys ───────────────────────────────────────────
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+secrets/
+credentials/
+service-account*.json
+
+# ── MLOps / AI Artifacts ─────────────────────────────────────
+*.pt
+*.pth
+*.pkl
+*.h5
+*.onnx
+*.bin
+models/weights/
+embeddings_cache/
+vector_store/
+mlruns/
+mlflow.db
+
+# ── Logs ─────────────────────────────────────────────────────
+logs/
+*.log
+*.log.*
+
+# ── Jupyter ──────────────────────────────────────────────────
+.ipynb_checkpoints/
+*.ipynb
+
+# ── Docs Build ───────────────────────────────────────────────
+docs/_build/
+site/
